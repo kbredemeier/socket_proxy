@@ -1,9 +1,14 @@
 defmodule SocketProxy.Proxy do
+  @moduledoc """
+  This GenServer acts as an proxy between the socket and the test process.
+  It forwars all `Phoenix.Socket.Message` and `Phoenix.Socket.Broadcast`
+  messages it receives to a stored process along with a stored id.
+  """
+
   use GenServer
 
   alias Phoenix.ChannelTest
   alias Phoenix.ChannelTest.NoopSerializer
-  alias Phoenix.Socket
   alias Phoenix.Socket.Transport
   alias Phoenix.Socket.Message
   alias Phoenix.Socket.Broadcast
@@ -22,63 +27,27 @@ defmodule SocketProxy.Proxy do
     GenServer.call(pid, {:connect, endpoint, handler, params})
   end
 
-  def subscribe_and_join!(
-    %Socket{transport_pid: pid} = socket,
-    channel_mod,
-    topic,
-    params
-  ) do
-    GenServer.call(
-      pid,
-      {:subscribe_and_join!, socket, channel_mod, topic, params}
-    )
-  end
-
-  @doc false
   def __state__(pid) do
     GenServer.call(pid, :state)
   end
 
-  def handle_info(%Message{} = push, %{pid: pid, id: id} = state) do
-    IO.puts """
-    ================== PUSH ==================
-    #{inspect push}
-    """
-    send(pid, {id, :push, push})
+  def handle_info(%Message{} = msg, %{pid: pid, id: id} = state) do
+    send(pid, {id, msg})
     {:noreply, state}
   end
 
-  def handle_info(%Broadcast{} = broadcast, %{pid: pid, id: id} = state) do
-    IO.puts """
-    ================== BROADCAST ==================
-    #{inspect broadcast}
-    """
-    send(pid, {id, :broadcast, broadcast})
+  def handle_info(%Broadcast{} = msg, %{pid: pid, id: id} = state) do
+    send(pid, {id, msg})
     {:noreply, state}
   end
 
   def handle_call({:connect, endpoint, handler, params}, _from, state) do
-    tuple =
+    result =
       endpoint
       |> do_connect(handler, params)
       |> do_subscribe()
 
-    {:reply, tuple, state}
-  end
-
-  def handle_call(
-    {:subscribe_and_join!, socket, channel_mod, topic, params},
-    _from,
-    state
-  ) do
-    tuple = ChannelTest.subscribe_and_join(
-      socket,
-      channel_mod,
-      topic,
-      params
-    )
-
-    {:reply, tuple, state}
+    {:reply, result, state}
   end
 
   def handle_call(:state, _from, state) do

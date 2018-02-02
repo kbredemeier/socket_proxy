@@ -2,6 +2,8 @@ defmodule SocketProxy.ProxyTest do
   use ExUnit.Case, async: true
 
   alias Phoenix.Socket
+  alias Phoenix.Socket.Message
+  alias Phoenix.Socket.Broadcast
   alias SocketProxy.Proxy
   alias SocketProxyWeb.Endpoint
   alias SocketProxyWeb.UserSocket
@@ -39,6 +41,32 @@ defmodule SocketProxy.ProxyTest do
       refute socket.transport_pid == self()
       assert socket.endpoint == Endpoint
       assert socket.handler == UserSocket
+    end
+  end
+
+  describe "acting as a message proxy for broadcasts and messages" do
+    setup do
+      id = System.unique_integer()
+      {:ok, pid} = Proxy.start_link(id: id)
+      {:ok, pid: pid, id: id}
+    end
+
+    test """
+    When the proxy receives a broadcast it wraps the message in a tuple
+    with the stored id and forwards it to the stored process.
+    """, %{id: id, pid: pid} do
+      msg = %Broadcast{event: System.unique_integer()}
+      send(pid, msg)
+      assert_receive {^id, ^msg}
+    end
+
+    test """
+    When the proxy receives a message it wraps the message in a tuple
+    with the stored id and forwards it to the stored process.
+    """, %{id: id, pid: pid} do
+      msg = %Message{ref: System.unique_integer()}
+      send(pid, msg)
+      assert_receive {^id, ^msg}
     end
   end
 end
