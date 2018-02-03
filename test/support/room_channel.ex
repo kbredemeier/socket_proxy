@@ -10,7 +10,7 @@
     user_name = socket.assigns.user.name
 
     broadcast_msg = "#{user_name} joined the room."
-    broadcast_from(socket, "msg", %{msg: broadcast_msg})
+    broadcast_from(socket, "msg", %{"body" => broadcast_msg})
 
     push_msg = "Welcome #{user_name}!"
     push(socket, "msg", %{"body" => push_msg})

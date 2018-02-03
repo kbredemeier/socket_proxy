@@ -11,6 +11,7 @@ defmodule SocketProxy.ProxyTest do
   describe "start_link/1" do
     test "starts a proxy" do
       assert {:ok, pid} = Proxy.start_link(id: :test)
+      assert is_pid(pid)
     end
 
     test "raises an error without an id" do
@@ -33,7 +34,7 @@ defmodule SocketProxy.ProxyTest do
       {:ok, pid: pid, id: id}
     end
 
-    test "builds a socket", %{pid: pid, id: id} do
+    test "builds a socket", %{pid: pid} do
       assert {:ok, socket} =
         Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
       assert %Socket{} = socket

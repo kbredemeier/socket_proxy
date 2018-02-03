@@ -1,7 +1,7 @@
 defmodule SocketProxyTest do
   use ExUnit.Case
   use SocketProxy,
-    endpoint: SocketProxyWeb.Endpoint,
+    endpoint: SocketProxyWeb.Endpoint
   use Phoenix.ChannelTest
 
   alias SocketProxy.Proxy

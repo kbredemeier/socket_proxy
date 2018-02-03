@@ -6,9 +6,7 @@ defmodule SocketProxyWeb.RoomChannelTest do
 
   import Phoenix.ChannelTest
 
-  alias Phoenix.Socket.Broadcast
   alias Phoenix.Socket.Message
-  alias SocketProxy.Proxy
   alias SocketProxyWeb.RoomChannel
   alias SocketProxyWeb.UserSocket
 
@@ -20,10 +18,10 @@ defmodule SocketProxyWeb.RoomChannelTest do
 
   test "when alice enters the room she receives a welcome msg" do
     {:ok, pid} = start_proxy(:alice)
-    socket =
-      pid
-      |> connect_proxy(UserSocket, %{"name" => "alice"})
-      |> join_room(1)
+
+    pid
+    |> connect_proxy(UserSocket, %{"name" => "alice"})
+    |> join_room(1)
 
     assert_receive {:alice, %Message{
       payload: %{"body" => "Welcome alice!"}
@@ -36,30 +34,29 @@ defmodule SocketProxyWeb.RoomChannelTest do
   room and he receives a welcome msg
   """ do
     {:ok, alice_proxy} = start_proxy(:alice)
-    {:ok, bob_proxy} = start_proxy(:alice)
-    socket =
-      pid
-      |> connect_proxy(UserSocket, %{"name" => "alice"})
-      |> join_room(1)
+    {:ok, bob_proxy} = start_proxy(:bob)
 
-    socket =
-      pid
-      |> connect_proxy(UserSocket, %{"name" => "alice"})
-      |> join_room(1)
+    alice_proxy
+    |> connect_proxy(UserSocket, %{"name" => "alice"})
+    |> join_room(1)
+
+    bob_proxy
+    |> connect_proxy(UserSocket, %{"name" => "bob"})
+    |> join_room(1)
 
     refute_receive {:alice, %Message{
       payload: %{"body" => "Welcome bob"}
     }}
 
-    assert_receive {:alice, %Broadcast{
+    assert_receive {:alice, %Message{
       payload: %{"body" => "bob joined the room."}
     }}
 
     assert_receive {:bob, %Message{
-      payload: %{"body" => "Welcome bob"}
+      payload: %{"body" => "Welcome bob!"}
     }}
 
-    refute_receive {:bob, %Broadcast{
+    refute_receive {:bob, %Message{
       payload: %{"body" => "bob joined the room."}
     }}
   end
