@@ -3,16 +3,28 @@ defmodule SocketProxy do
   Documentation for SocketProxy.
   """
 
-  @doc """
-  Hello world.
+  alias SocketProxy.Proxy
 
-  ## Examples
+  defmacro __using__(opts \\ []) do
+    endpoint = Keyword.fetch!(opts, :endpoint)
 
-      iex> SocketProxy.hello
-      :world
+    quote location: :keep do
+      import unquote(__MODULE__)
+      alias SocketProxy.Proxy
 
-  """
-  def hello do
-    :world
+      def connect_proxy(pid, handler, params \\ %{}) do
+        Proxy.connect(
+          pid,
+          unquote(endpoint),
+          handler,
+          params
+        )
+      end
+    end
+  end
+
+  def start_proxy(id \\ nil) do
+    id = id || System.unique_integer()
+    Proxy.start_link(id: id)
   end
 end
