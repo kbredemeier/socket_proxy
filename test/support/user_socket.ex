@@ -2,10 +2,10 @@ defmodule SocketProxyWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  channel "room:*", SocketProxyWeb.RoomChannel
+  channel("room:*", SocketProxyWeb.RoomChannel)
 
   ## Transports
-  transport :websocket, Phoenix.Transports.WebSocket
+  transport(:websocket, Phoenix.Transports.WebSocket)
 
   def connect(params, socket) do
     case authorized(params) do

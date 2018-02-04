@@ -76,8 +76,10 @@ defmodule SocketProxy.Proxy do
   end
 
   def handle_call(
-    {:subscribe_and_join, sub_and_join_args}, _from, state
-  ) do
+        {:subscribe_and_join, sub_and_join_args},
+        _from,
+        state
+      ) do
     result = apply(ChannelTest, :subscribe_and_join, sub_and_join_args)
     {:reply, result, state}
   end
@@ -101,6 +103,7 @@ defmodule SocketProxy.Proxy do
     if topic = socket.handler.id(socket) do
       :ok = socket.endpoint.subscribe(topic)
     end
+
     {:ok, socket}
   end
 end

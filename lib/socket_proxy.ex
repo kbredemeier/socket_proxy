@@ -103,8 +103,7 @@ defmodule SocketProxy do
   Subscribes and joins the socket to the channel and links it to the proxy.
   See `Phoenix.ChannelTest.subscribe_and_join/4` for further details.
   """
-  @spec subscribe_and_join_proxy(Socket.t, atom, String.t, map) ::
-        {:ok, Socket.t}
+  @spec subscribe_and_join_proxy(Socket.t(), atom, String.t(), map) :: {:ok, Socket.t()}
   def subscribe_and_join_proxy(socket, channel, topic, params \\ %{}) do
     Proxy.subscribe_and_join(socket.transport_pid, [
       socket,
@@ -118,11 +117,12 @@ defmodule SocketProxy do
   Subscribes and joins the socket to the channel and links it to the proxy.
   See `Phoenix.ChannelTest.subscribe_and_join!/4` for further details.
   """
-  @spec subscribe_and_join_proxy!(Socket.t, atom, String.t, map) :: Socket.t
+  @spec subscribe_and_join_proxy!(Socket.t(), atom, String.t(), map) :: Socket.t()
   def subscribe_and_join_proxy!(socket, channel, topic, params \\ %{}) do
     case subscribe_and_join_proxy(socket, channel, topic, params) do
       {:ok, _, socket} ->
         socket
+
       {:error, error} ->
         raise "could not join channel, got error: #{inspect(error)}"
     end
@@ -140,7 +140,7 @@ defmodule SocketProxy do
   `Phoenix.ChanneText.connect/2` does but instead of binding the process
   to the test it binds to the proxy.
   """
-  @spec connect_proxy(pid, atom, map) :: {:ok, Socket.t}
+  @spec connect_proxy(pid, atom, map) :: {:ok, Socket.t()}
   defmacro connect_proxy(pid, handler, params \\ %{}) do
     if endpoint = Module.get_attribute(__CALLER__.module, :endpoint) do
       quote do
@@ -176,9 +176,10 @@ defmodule SocketProxy do
       pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id_or_socket))
 
       assert_receive {
-        ^pid_or_id,
-        %Message{event: unquote(event), payload: unquote(payload)}
-      }, unquote(timeout)
+                       ^pid_or_id,
+                       %Message{event: unquote(event), payload: unquote(payload)}
+                     },
+                     unquote(timeout)
     end
   end
 
@@ -192,9 +193,10 @@ defmodule SocketProxy do
       pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id))
 
       refute_receive {
-        ^pid_or_id,
-        %Message{event: unquote(event), payload: unquote(payload)}
-      }, unquote(timeout)
+                       ^pid_or_id,
+                       %Message{event: unquote(event), payload: unquote(payload)}
+                     },
+                     unquote(timeout)
     end
   end
 
@@ -208,9 +210,10 @@ defmodule SocketProxy do
       pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id))
 
       assert_receive {
-        ^pid_or_id,
-        %Broadcast{event: unquote(event), payload: unquote(payload)}
-      }, unquote(timeout)
+                       ^pid_or_id,
+                       %Broadcast{event: unquote(event), payload: unquote(payload)}
+                     },
+                     unquote(timeout)
     end
   end
 
@@ -224,9 +227,10 @@ defmodule SocketProxy do
       pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id))
 
       refute_receive {
-        ^pid_or_id,
-        %Broadcast{event: unquote(event), payload: unquote(payload)}
-      }, unquote(timeout)
+                       ^pid_or_id,
+                       %Broadcast{event: unquote(event), payload: unquote(payload)}
+                     },
+                     unquote(timeout)
     end
   end
 

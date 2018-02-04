@@ -1,7 +1,7 @@
 defmodule SocketProxyWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :socket_proxy
 
-  socket "/socket", SocketProxyWeb.UserSocket
+  socket("/socket", SocketProxyWeb.UserSocket)
 
   @doc """
   Callback invoked for dynamically configuring the endpoint.

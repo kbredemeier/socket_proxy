@@ -9,7 +9,7 @@ defmodule SocketProxy.Application do
     import Supervisor.Spec
     # List all child processes to be supervised
     children = [
-      supervisor(SocketProxyWeb.Endpoint, []),
+      supervisor(SocketProxyWeb.Endpoint, [])
     ]
 
     opts = [strategy: :one_for_one, name: SocketProxy.Supervisor]
