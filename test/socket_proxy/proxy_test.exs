@@ -7,6 +7,7 @@ defmodule SocketProxy.ProxyTest do
   alias SocketProxy.Proxy
   alias SocketProxyWeb.Endpoint
   alias SocketProxyWeb.UserSocket
+  alias SocketProxyWeb.RoomChannel
 
   describe "start_link/1" do
     test "starts a proxy" do
@@ -42,6 +43,22 @@ defmodule SocketProxy.ProxyTest do
       refute socket.transport_pid == self()
       assert socket.endpoint == Endpoint
       assert socket.handler == UserSocket
+    end
+  end
+
+  describe "subscribe_and_join/2" do
+    test "subscribes to a channel" do
+      id = System.unique_integer()
+      {:ok, pid} = Proxy.start_link(id: id)
+      {:ok, socket} = Proxy.connect(
+        pid,
+        Endpoint,
+        UserSocket,
+        %{"name" => "alice"}
+      )
+      {:ok, _, %Socket{}} =
+        Proxy.subscribe_and_join(pid, [socket, RoomChannel, "room:1"])
+      assert_receive {^id, _}
     end
   end
 

@@ -27,6 +27,10 @@ defmodule SocketProxy.Proxy do
     GenServer.call(pid, {:connect, endpoint, handler, params})
   end
 
+  def subscribe_and_join(pid, subscribe_and_join_args) do
+    GenServer.call(pid, {:subscribe_and_join, subscribe_and_join_args})
+  end
+
   def __state__(pid) do
     GenServer.call(pid, :state)
   end
@@ -47,6 +51,13 @@ defmodule SocketProxy.Proxy do
       |> do_connect(handler, params)
       |> do_subscribe()
 
+    {:reply, result, state}
+  end
+
+  def handle_call(
+    {:subscribe_and_join, sub_and_join_args}, _from, state
+  ) do
+    result = apply(ChannelTest, :subscribe_and_join, sub_and_join_args)
     {:reply, result, state}
   end
 
