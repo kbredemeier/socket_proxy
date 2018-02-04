@@ -1,4 +1,5 @@
 # SocketProxy
+[![Build Status](https://travis-ci.org/kbredemeier/socket_proxy.svg?branch=master)](https://travis-ci.org/kbredemeier/socket_proxy)
 
 *WARNING* This library is currently in alpha stage and might change in the near
 future.
