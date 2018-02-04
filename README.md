@@ -1,5 +1,8 @@
 # SocketProxy
 
+*WARNING* This library is currently in alpha stage and might change in the near
+future.
+
 Convinience for testing multiple socket connections.
 
 When testing a `Phoenix.Channel` you might run into one of the following
