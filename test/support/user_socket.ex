@@ -14,10 +14,6 @@ defmodule SocketProxyWeb.UserSocket do
     end
   end
 
-  def connect(_params, _socket) do
-    :error
-  end
-
   def id(socket), do: "user_socket:#{socket.assigns.user.id}"
 
   defp authorized(%{"name" => "alice"}) do
