@@ -4,6 +4,8 @@ defmodule SocketProxy do
   """
 
   alias SocketProxy.Proxy
+  alias Phoenix.Socket.Message
+  alias Phoenix.Socket.Broadcast
 
   defmacro __using__(_) do
     quote do
@@ -22,7 +24,25 @@ defmodule SocketProxy do
         )
       end
     else
-      raise "module attribute @endpoint not set for socket/2"
+      raise "module attribute @endpoint not set for connect_proxy/3"
+    end
+  end
+
+  defmacro assert_push_on(id, event, payload, timeout \\ 100) do
+    quote do
+      assert_receive {
+        unquote(id),
+        %Message{event: unquote(event), payload: unquote(payload)}
+      }, unquote(timeout)
+    end
+  end
+
+  defmacro assert_broadcast_on(id, event, payload, timeout \\ 100) do
+    quote do
+      assert_receive {
+        unquote(id),
+        %Broadcast{event: unquote(event), payload: unquote(payload)}
+      }, unquote(timeout)
     end
   end
 
@@ -37,7 +57,24 @@ defmodule SocketProxy do
   end
 
   def start_proxy(id \\ nil) do
-    id = id || System.unique_integer()
-    Proxy.start_link(id: id)
+    Proxy.start_link(id)
+  end
+
+  def subscribe_and_join_proxy(socket, channel, topic, params \\ %{}) do
+    Proxy.subscribe_and_join(socket.transport_pid, [
+      socket,
+      channel,
+      topic,
+      params
+    ])
+  end
+
+  def subscribe_and_join_proxy!(socket, channel, topic, params \\ %{}) do
+    case subscribe_and_join_proxy(socket, channel, topic, params) do
+      {:ok, _, socket} ->
+        socket
+      {:error, error} ->
+        raise "could not join channel, got error: #{inspect(error)}"
+    end
   end
 end

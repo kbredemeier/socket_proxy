@@ -13,14 +13,22 @@ defmodule SocketProxy.Proxy do
   alias Phoenix.Socket.Message
   alias Phoenix.Socket.Broadcast
 
-  def start_link(opts \\ []) do
-    pid = Keyword.get(opts, :pid, self())
-    id = Keyword.fetch!(opts, :id)
-    GenServer.start_link(__MODULE__, %{pid: pid, id: id})
+  def start_link(id \\ nil)
+
+  def start_link(nil) do
+    GenServer.start_link(__MODULE__, %{pid: self()})
   end
 
-  def init(opts) do
-    {:ok, opts}
+  def start_link(id) do
+    GenServer.start_link(__MODULE__, %{pid: self(), id: id})
+  end
+
+  def init(%{pid: _, id: _} = state) do
+    {:ok, state}
+  end
+
+  def init(%{pid: pid}) do
+    {:ok, %{pid: pid, id: self()}}
   end
 
   def connect(pid, endpoint, handler, params) do

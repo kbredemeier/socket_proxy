@@ -10,29 +10,45 @@ defmodule SocketProxy.ProxyTest do
   alias SocketProxyWeb.RoomChannel
 
   describe "start_link/1" do
+    test "starts a proxy with given id" do
+      assert {:ok, pid} = Proxy.start_link(:test)
+      assert is_pid(pid)
+      expected_pid = self()
+      assert %{pid: ^expected_pid, id: :test} = Proxy.__state__(pid)
+    end
+
+    test "starts a proxy with nil" do
+      assert {:ok, pid} = Proxy.start_link(nil)
+      assert is_pid(pid)
+      expected_pid = self()
+      assert %{pid: ^expected_pid, id: ^pid} = Proxy.__state__(pid)
+    end
+
+    test "starts a proxy without arg" do
+      assert {:ok, pid} = Proxy.start_link()
+      assert is_pid(pid)
+      expected_pid = self()
+      assert %{pid: ^expected_pid, id: ^pid} = Proxy.__state__(pid)
+    end
+  end
+
+  describe "start_link/0" do
     test "starts a proxy" do
-      assert {:ok, pid} = Proxy.start_link(id: :test)
+      assert {:ok, pid} = Proxy.start_link()
       assert is_pid(pid)
     end
 
-    test "raises an error without an id" do
-      assert_raise KeyError, fn ->
-        Proxy.start_link()
-      end
-    end
-
-    test "sets up the state" do
-      {:ok, pid} = Proxy.start_link(id: :test)
+    test "sets up the expected state" do
+      {:ok, pid} = Proxy.start_link()
       expected_pid = self()
-      assert %{pid: ^expected_pid, id: :test} = Proxy.__state__(pid)
+      assert %{pid: ^expected_pid, id: ^pid} = Proxy.__state__(pid)
     end
   end
 
   describe "connect/4" do
     setup do
-      id = System.unique_integer()
-      {:ok, pid} = Proxy.start_link(id: id)
-      {:ok, pid: pid, id: id}
+      {:ok, pid} = Proxy.start_link()
+      {:ok, pid: pid}
     end
 
     test "builds a socket", %{pid: pid} do
@@ -48,8 +64,7 @@ defmodule SocketProxy.ProxyTest do
 
   describe "subscribe_and_join/2" do
     test "subscribes to a channel" do
-      id = System.unique_integer()
-      {:ok, pid} = Proxy.start_link(id: id)
+      {:ok, pid} = Proxy.start_link()
       {:ok, socket} = Proxy.connect(
         pid,
         Endpoint,
@@ -58,33 +73,32 @@ defmodule SocketProxy.ProxyTest do
       )
       {:ok, _, %Socket{}} =
         Proxy.subscribe_and_join(pid, [socket, RoomChannel, "room:1"])
-      assert_receive {^id, _}
+      assert_receive {^pid, _}
     end
   end
 
   describe "acting as a message proxy for broadcasts and messages" do
     setup do
-      id = System.unique_integer()
-      {:ok, pid} = Proxy.start_link(id: id)
-      {:ok, pid: pid, id: id}
+      {:ok, pid} = Proxy.start_link()
+      {:ok, pid: pid}
     end
 
     test """
     When the proxy receives a broadcast it wraps the message in a tuple
     with the stored id and forwards it to the stored process.
-    """, %{id: id, pid: pid} do
+    """, %{pid: pid} do
       msg = %Broadcast{event: System.unique_integer()}
       send(pid, msg)
-      assert_receive {^id, ^msg}
+      assert_receive {^pid, ^msg}
     end
 
     test """
     When the proxy receives a message it wraps the message in a tuple
     with the stored id and forwards it to the stored process.
-    """, %{id: id, pid: pid} do
+    """, %{pid: pid} do
       msg = %Message{ref: System.unique_integer()}
       send(pid, msg)
-      assert_receive {^id, ^msg}
+      assert_receive {^pid, ^msg}
     end
   end
 end

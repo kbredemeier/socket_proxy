@@ -10,10 +10,9 @@ defmodule SocketProxyTest do
   @endpoint SocketProxyWeb.Endpoint
 
   describe "start_proxy/1" do
-    test "generates an id" do
+    test "sets an id when no arg given" do
       assert {:ok, pid} = start_proxy()
-      %{id: id} = Proxy.__state__(pid)
-      assert is_integer(id)
+      %{id: ^pid} = Proxy.__state__(pid)
     end
 
     test "sets the argument as id" do
