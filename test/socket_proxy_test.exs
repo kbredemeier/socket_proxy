@@ -1,13 +1,9 @@
 defmodule SocketProxyTest do
-  use ExUnit.Case
-  use SocketProxy,
-    endpoint: SocketProxyWeb.Endpoint
-  use Phoenix.ChannelTest
+  use SocketProxyWeb.ChannelCase
+  use SocketProxy
 
   alias SocketProxy.Proxy
   alias SocketProxyWeb.UserSocket
-
-  @endpoint SocketProxyWeb.Endpoint
 
   describe "start_proxy/1" do
     test "sets an id when no arg given" do

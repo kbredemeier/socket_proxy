@@ -1,17 +1,11 @@
 defmodule SocketProxy.IntegrationTest do
-  use ExUnit.Case
-  use SocketProxy,
-    endpoint: SocketProxyWeb.Endpoint
-  use Phoenix.ChannelTest
-
-  import Phoenix.ChannelTest
+  use SocketProxyWeb.ChannelCase
+  use SocketProxy
 
   alias Phoenix.Socket.Broadcast
   alias Phoenix.Socket.Message
   alias SocketProxyWeb.RoomChannel
   alias SocketProxyWeb.UserSocket
-
-  @endpoint SocketProxyWeb.Endpoint
 
   defp join_room({:ok, socket}, id) do
     subscribe_and_join_proxy!(socket, RoomChannel, "room:#{id}")

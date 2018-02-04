@@ -13,6 +13,9 @@ defmodule SocketProxy.Proxy do
   alias Phoenix.Socket.Message
   alias Phoenix.Socket.Broadcast
 
+  @doc """
+  Starts the `Proxy`.
+  """
   def start_link(id \\ nil)
 
   def start_link(nil) do
@@ -23,6 +26,7 @@ defmodule SocketProxy.Proxy do
     GenServer.start_link(__MODULE__, %{pid: self(), id: id})
   end
 
+  @doc false
   def init(%{pid: _, id: _} = state) do
     {:ok, state}
   end
@@ -31,14 +35,23 @@ defmodule SocketProxy.Proxy do
     {:ok, %{pid: pid, id: self()}}
   end
 
+  @doc """
+  Connects the proxy to a socket.
+  """
   def connect(pid, endpoint, handler, params) do
     GenServer.call(pid, {:connect, endpoint, handler, params})
   end
 
+  @doc """
+  Subscribes the proxy to a channel.
+  """
   def subscribe_and_join(pid, subscribe_and_join_args) do
     GenServer.call(pid, {:subscribe_and_join, subscribe_and_join_args})
   end
 
+  @doc """
+  Returns the internal state of the proxy.
+  """
   def __state__(pid) do
     GenServer.call(pid, :state)
   end

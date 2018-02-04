@@ -1,45 +1,3 @@
-# SocketProxy
-
-Convinience for testing multiple socket connections.
-
-When testing a `Phoenix.Channel` you might run into one of the following
-situations:
-
-* You want to make sure that a message is received on a specific user's socket
-* You want to terminate the transport process.
-
-If you ever found yourself in one of these situations this library might come
-in handy.
-
-When using the functions provided by `Phoenix.ChannelTest` to connect to a
-socket or join a channel the socket or channel will be linked to the pid of
-the test. The test process will receive all the `Phoenix.Socket.Message` and
-`Phoenix.Socket.Broadcast` that would otherwise pushed to the client.
-
-Unfortunately this way it is impossible to assert that a message was sent
-on a specific socket, nor is it possible to to realy close the socket because
-the `transport_pid` of the socket is the test itself.
-
-This is where `SocketProxy` comes in. It proxies the socket connection through
-a seperate process and tags the messages so that its origin can be asserted
-on.
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `socket_proxy` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:socket_proxy, "~> 0.1.0", only: :test},
-  ]
-end
-```
-
-## Example
-
-```elixir
 defmodule SocketProxyWeb.RoomChannelTest do
   use SocketProxyWeb.ChannelCase
   use SocketProxy
@@ -84,7 +42,7 @@ defmodule SocketProxyWeb.RoomChannelTest do
       {:ok, proxy_pid} = start_proxy(:alice_socket)
       params = %{"name" => "alice"}
       {:ok, socket} = connect_proxy(proxy_pid, UserSocket, params)
-      socket = subscribe_and_join_proxy!(socket, RoomChannel, "room:1")
+      subscribe_and_join_proxy!(socket, RoomChannel, "room:1")
 
       :ok
     end
@@ -95,4 +53,3 @@ defmodule SocketProxyWeb.RoomChannelTest do
     end
   end
 end
-```
