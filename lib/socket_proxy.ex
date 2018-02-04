@@ -4,6 +4,7 @@ defmodule SocketProxy do
   """
 
   alias SocketProxy.Proxy
+  alias Phoenix.Socket
   alias Phoenix.Socket.Message
   alias Phoenix.Socket.Broadcast
 
@@ -28,24 +29,6 @@ defmodule SocketProxy do
     end
   end
 
-  defmacro assert_push_on(id, event, payload, timeout \\ 100) do
-    quote do
-      assert_receive {
-        unquote(id),
-        %Message{event: unquote(event), payload: unquote(payload)}
-      }, unquote(timeout)
-    end
-  end
-
-  defmacro assert_broadcast_on(id, event, payload, timeout \\ 100) do
-    quote do
-      assert_receive {
-        unquote(id),
-        %Broadcast{event: unquote(event), payload: unquote(payload)}
-      }, unquote(timeout)
-    end
-  end
-
   @doc false
   def __connect_proxy__(proxy_pid, endpoint, handler, params) do
     Proxy.connect(
@@ -55,6 +38,53 @@ defmodule SocketProxy do
       params
     )
   end
+
+  defmacro assert_push_on(id, event, payload, timeout \\ 100) do
+    quote do
+      pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id))
+
+      assert_receive {
+        ^pid_or_id,
+        %Message{event: unquote(event), payload: unquote(payload)}
+      }, unquote(timeout)
+    end
+  end
+
+  defmacro refute_push_on(id, event, payload, timeout \\ 100) do
+    quote do
+      pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id))
+
+      refute_receive {
+        ^pid_or_id,
+        %Message{event: unquote(event), payload: unquote(payload)}
+      }, unquote(timeout)
+    end
+  end
+
+  defmacro assert_broadcast_on(id, event, payload, timeout \\ 100) do
+    quote do
+      pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id))
+
+      assert_receive {
+        ^pid_or_id,
+        %Broadcast{event: unquote(event), payload: unquote(payload)}
+      }, unquote(timeout)
+    end
+  end
+
+  defmacro refute_broadcast_on(id, event, payload, timeout \\ 100) do
+    quote do
+      pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id))
+
+      refute_receive {
+        ^pid_or_id,
+        %Broadcast{event: unquote(event), payload: unquote(payload)}
+      }, unquote(timeout)
+    end
+  end
+
+  def __get_pid_or_id__(%Socket{transport_pid: pid}), do: pid
+  def __get_pid_or_id__(any), do: any
 
   def start_proxy(id \\ nil) do
     Proxy.start_link(id)

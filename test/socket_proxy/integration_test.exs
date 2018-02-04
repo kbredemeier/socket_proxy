@@ -17,6 +17,123 @@ defmodule SocketProxy.IntegrationTest do
     subscribe_and_join_proxy!(socket, RoomChannel, "room:#{id}")
   end
 
+  describe "assert_push_on/4" do
+    setup do
+      {:ok, proxy} = start_proxy()
+
+      socket =
+        proxy
+        |> connect_proxy(UserSocket, %{"name" => "alice"})
+        |> join_room(1)
+
+      {:ok, proxy: proxy, socket: socket}
+    end
+
+    test "it works with the proxy pid", %{proxy: proxy} do
+      assert_push_on proxy, "msg", %{"body" => "Welcome alice!"}
+    end
+
+    test "it works with the proxy socket", %{socket: socket} do
+      assert_push_on socket, "msg", %{"body" => "Welcome alice!"}
+    end
+
+    test "it fails when the message is not received" do
+      id = :wrong_id
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_push_on id, "msg", %{"body" => "Welcome alice!"}
+      end
+    end
+  end
+
+  describe "refute_push_on/4" do
+    setup do
+      {:ok, proxy} = start_proxy()
+
+      socket =
+        proxy
+        |> connect_proxy(UserSocket, %{"name" => "alice"})
+        |> join_room(1)
+
+      {:ok, proxy: proxy, socket: socket}
+    end
+
+    test "it works with the proxy pid", %{proxy: proxy} do
+      refute_push_on proxy, "msg", %{"foo" => "bar"}
+    end
+
+    test "it works with the proxy socket", %{socket: socket} do
+      refute_push_on socket, "msg", %{"foo" => "bar"}
+    end
+
+    test "it fails when the message is received", %{socket: socket} do
+      assert_raise ExUnit.AssertionError, fn ->
+        refute_push_on socket, "msg", %{"body" => "Welcome alice!"}
+      end
+    end
+  end
+
+  describe "assert_broadcast_on/4" do
+    setup do
+      {:ok, proxy} = start_proxy()
+
+      socket =
+        proxy
+        |> connect_proxy(UserSocket, %{"name" => "alice"})
+        |> join_room(1)
+
+      push(socket, "shout", %{"body" => "test"})
+
+      {:ok, proxy: proxy, socket: socket}
+    end
+
+    test "it works with the proxy pid", %{proxy: proxy} do
+      assert_broadcast_on proxy, "shout", %{"body" => "test"}
+    end
+
+    test "it works with the proxy socket", %{socket: socket} do
+      assert_broadcast_on socket, "shout", %{"body" => "test"}
+    end
+
+    test "it fails when the message is not received" do
+      id = :wrong_id
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_broadcast_on id, "shout", %{"body" => "test"}
+      end
+    end
+  end
+
+  describe "refute_broadcast_on/4" do
+    setup do
+      {:ok, proxy} = start_proxy()
+
+      socket =
+        proxy
+        |> connect_proxy(UserSocket, %{"name" => "alice"})
+        |> join_room(1)
+
+      push(socket, "shout", %{"body" => "test"})
+
+      {:ok, proxy: proxy, socket: socket}
+    end
+
+    test "it works with the proxy pid", %{proxy: proxy} do
+      refute_broadcast_on proxy, "shout", %{"body" => "false"}
+    end
+
+    test "it works with the proxy socket", %{socket: socket} do
+      refute_broadcast_on socket, "shout", %{"body" => "false"}
+    end
+
+    test "it fails when the unexpected message is received",
+    %{socket: socket} do
+      assert_raise ExUnit.AssertionError, fn ->
+        refute_broadcast_on socket, "shout", %{"body" => "test"}
+      end
+    end
+  end
+
   describe "The test receives messages with id of the proxy" do
     setup do
       {:ok, alice_proxy} = start_proxy()
