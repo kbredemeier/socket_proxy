@@ -6,10 +6,6 @@ defmodule SocketProxy.Application do
   use Application
 
   def start(_type, _args) do
-    do_start(Mix.env)
-  end
-
-  defp do_start(:test) do
     import Supervisor.Spec
     # List all child processes to be supervised
     children = [
@@ -19,6 +15,4 @@ defmodule SocketProxy.Application do
     opts = [strategy: :one_for_one, name: SocketProxy.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
-  defp do_start(_), do: :ok
 end

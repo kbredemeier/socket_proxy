@@ -14,9 +14,16 @@ defmodule SocketProxy.MixProject do
 
   # Run "mix help compile.app" to learn about applications.
   def application do
+    build_application(Mix.env)
+  end
+
+  defp build_application(:test) do
+    build_application(nil) ++ [mod: {SocketProxy.Application, []}]
+  end
+
+  defp build_application(_) do
     [
       extra_applications: [:logger],
-      mod: {SocketProxy.Application, []}
     ]
   end
 
