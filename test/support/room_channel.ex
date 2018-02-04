@@ -1,9 +1,7 @@
 defmodule SocketProxyWeb.RoomChannel do
   use SocketProxyWeb, :channel
 
-  alias SocketProxyWeb.UserSocket
-
-  def join("room:" <> room_id, payload, socket) do
+  def join("room:" <> room_id, _params, socket) do
     send(self(), :announce_user)
     {:ok, assign(socket, :room_id, room_id)}
   end
