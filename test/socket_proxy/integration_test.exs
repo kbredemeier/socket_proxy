@@ -11,6 +11,64 @@ defmodule SocketProxy.IntegrationTest do
     subscribe_and_join_proxy!(socket, RoomChannel, "room:#{id}")
   end
 
+  describe "assert_reply/5" do
+    setup do
+      {:ok, proxy} = start_proxy()
+
+      socket =
+        proxy
+        |> connect_proxy(UserSocket, %{"name" => "alice"})
+        |> join_room(1)
+
+      ref = push(socket, "reply", %{"body" => "test"})
+
+      {:ok, proxy: proxy, socket: socket, ref: ref}
+    end
+
+    test "it works with the proxy pid", %{proxy: proxy, ref: ref} do
+      assert_reply_on proxy, ref, :ok
+    end
+
+    test "it works with the proxy socket", %{socket: socket, ref: ref} do
+      assert_reply_on socket, ref, :ok
+    end
+
+    test "it fails when the message is not received", %{socket: socket, ref: ref} do
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_reply_on socket, ref, :error
+      end
+    end
+  end
+
+  describe "refute_reply/5" do
+    setup do
+      {:ok, proxy} = start_proxy()
+
+      socket =
+        proxy
+        |> connect_proxy(UserSocket, %{"name" => "alice"})
+        |> join_room(1)
+
+      ref = push(socket, "reply", %{"body" => "test"})
+
+      {:ok, proxy: proxy, socket: socket, ref: ref}
+    end
+
+    test "it works with the proxy pid", %{proxy: proxy, ref: ref} do
+      refute_reply_on proxy, ref, :error
+    end
+
+    test "it works with the proxy socket", %{socket: socket, ref: ref} do
+      refute_reply_on socket, ref, :error
+    end
+
+    test "it fails when the message is not received", %{socket: socket, ref: ref} do
+      assert_raise ExUnit.AssertionError, fn ->
+        refute_reply_on socket, ref, :ok
+      end
+    end
+  end
+
   describe "assert_push_on/4" do
     setup do
       {:ok, proxy} = start_proxy()

@@ -84,10 +84,11 @@ defmodule SocketProxy do
 
   """
 
-  alias SocketProxy.Proxy
   alias Phoenix.Socket
-  alias Phoenix.Socket.Message
   alias Phoenix.Socket.Broadcast
+  alias Phoenix.Socket.Message
+  alias Phoenix.Socket.Reply
+  alias SocketProxy.Proxy
 
   @doc """
   Starts a proxy. This must always be invoked first!
@@ -164,6 +165,50 @@ defmodule SocketProxy do
       handler,
       params
     )
+  end
+
+  @doc """
+  Asserts the channel has replied on the given socket to the given message
+  within `timeout`. Works similar to `Phoenix.ChannelTest.assert_reply/4`.
+  """
+  defmacro assert_reply_on(
+    id_or_socket,
+    ref,
+    status,
+    payload \\ Macro.escape(%{}),
+    timeout \\ 100
+  ) do
+    quote do
+      ref = unquote(ref)
+      pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id_or_socket))
+
+      assert_receive {
+        ^pid_or_id,
+        %Reply{ref: ^ref, status: unquote(status), payload: unquote(payload)}
+      }, unquote(timeout)
+    end
+  end
+
+  @doc """
+  Refutes the channel has replied on the given socket to the given message
+  within `timeout`. Works similar to `Phoenix.ChannelTest.refute_reply/4`.
+  """
+  defmacro refute_reply_on(
+    id_or_socket,
+    ref,
+    status,
+    payload \\ Macro.escape(%{}),
+    timeout \\ 100
+  ) do
+    quote do
+      ref = unquote(ref)
+      pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id_or_socket))
+
+      refute_receive {
+        ^pid_or_id,
+        %Reply{ref: ^ref, status: unquote(status), payload: unquote(payload)}
+      }, unquote(timeout)
+    end
   end
 
   @doc """

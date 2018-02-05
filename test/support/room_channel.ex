@@ -22,4 +22,8 @@ defmodule SocketProxyWeb.RoomChannel do
     broadcast!(socket, "shout", %{"body" => body})
     {:noreply, socket}
   end
+
+  def handle_in("reply", params, socket) do
+    {:reply, {:ok, params}, socket}
+  end
 end
