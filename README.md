@@ -11,6 +11,7 @@ situations:
 
 * You want to make sure that a message is received on a specific user's socket
 * You want to terminate the transport process.
+* You want to isolate the messages you receive in your test.
 
 If you ever found yourself in one of these situations this library might come
 in handy.
@@ -103,6 +104,7 @@ end
 
 ## TODO
 
-* add examples for `assert_reply` and `refute_reply`
+* Add examples for `assert_reply` and `refute_reply`
+* Add examples for silent option
 * Test if `leave/1` and `close/1` works as expected
 
