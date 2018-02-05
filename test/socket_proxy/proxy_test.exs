@@ -7,26 +7,49 @@ defmodule SocketProxy.ProxyTest do
   alias SocketProxyWeb.RoomChannel
   alias SocketProxyWeb.UserSocket
 
-  describe "start_link/1" do
+  describe "start_link/2" do
     test "starts a proxy with given id" do
       assert {:ok, pid} = Proxy.start_link(:test)
       assert is_pid(pid)
       expected_pid = self()
-      assert %{pid: ^expected_pid, id: :test} = Proxy.__state__(pid)
+      assert %{
+        pid: ^expected_pid,
+        id: :test,
+        silent: false
+      } = Proxy.__state__(pid)
     end
 
     test "starts a proxy with nil" do
       assert {:ok, pid} = Proxy.start_link(nil)
       assert is_pid(pid)
       expected_pid = self()
-      assert %{pid: ^expected_pid, id: ^pid} = Proxy.__state__(pid)
+      assert %{
+        pid: ^expected_pid,
+        id: ^pid,
+        silent: false
+      } = Proxy.__state__(pid)
     end
 
-    test "starts a proxy without arg" do
+    test "starts a proxy without args" do
       assert {:ok, pid} = Proxy.start_link()
       assert is_pid(pid)
       expected_pid = self()
-      assert %{pid: ^expected_pid, id: ^pid} = Proxy.__state__(pid)
+      assert %{
+        pid: ^expected_pid,
+        id: ^pid,
+        silent: false
+      } = Proxy.__state__(pid)
+    end
+
+    test "starts a proxy with silent option" do
+      assert {:ok, pid} = Proxy.start_link(silent: true)
+      assert is_pid(pid)
+      expected_pid = self()
+      assert %{
+        pid: ^expected_pid,
+        id: ^pid,
+        silent: true
+      } = Proxy.__state__(pid)
     end
   end
 
@@ -52,6 +75,13 @@ defmodule SocketProxy.ProxyTest do
       {:ok, socket} = Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
       {:ok, _, %Socket{}} = Proxy.subscribe_and_join(pid, [socket, RoomChannel, "room:1"])
       assert_receive {^pid, _}
+    end
+
+    test "wont forward messages when silent" do
+      {:ok, pid} = Proxy.start_link(silent: true)
+      {:ok, socket} = Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
+      {:ok, _, %Socket{}} = Proxy.subscribe_and_join(pid, [socket, RoomChannel, "room:1"])
+      refute_receive _
     end
   end
 

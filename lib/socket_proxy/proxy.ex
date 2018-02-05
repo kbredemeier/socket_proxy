@@ -19,8 +19,18 @@ defmodule SocketProxy.Proxy do
   * `pid` The `pid` of the process that invoked `start_link/1`.
   * `id` The identifier for the socket. Each message will be forwarded with
     the idenfifier.
+  * `silent` Boolean to silence the socket. If `true` no messages will be
+    forwarded.
   """
-  @type state :: %{pid: pid, id: any}
+  @type state :: %{pid: pid, id: any, silent: boolean}
+
+  @doc """
+  Convinience function to call `start_link/2` with opts only.
+  """
+  @spec start_link(keyword) :: GenServer.on_start()
+  def start_link([_ | _] = opts) do
+    start_link(nil, opts)
+  end
 
   @doc """
   Starts the `Proxy` and links it to the current process.
@@ -32,24 +42,19 @@ defmodule SocketProxy.Proxy do
   indentifier in a tuple and forwards it to the test process. That way
   assertions on the origin of a message can easily be made.
   """
-  @spec start_link(any) :: GenServer.on_start()
-  def start_link(id \\ nil)
-
-  def start_link(nil) do
-    GenServer.start_link(__MODULE__, %{pid: self()})
-  end
-
-  def start_link(id) do
-    GenServer.start_link(__MODULE__, %{pid: self(), id: id})
+  @spec start_link(any, keyword) :: GenServer.on_start()
+  def start_link(id \\ nil, opts \\ []) do
+    silent = Keyword.get(opts, :silent, false)
+    GenServer.start_link(__MODULE__, %{pid: self(), id: id, silent: silent})
   end
 
   @doc false
-  def init(%{pid: _, id: _} = state) do
-    {:ok, state}
+  def init(%{id: nil} = state) do
+    {:ok, %{state | id: self()}}
   end
 
-  def init(%{pid: pid}) do
-    {:ok, %{pid: pid, id: self()}}
+  def init(state) do
+    {:ok, state}
   end
 
   @doc """
@@ -98,6 +103,10 @@ defmodule SocketProxy.Proxy do
   end
 
   # Invoked when the socket sends any message to the proxy.
+  def handle_info(_msg, %{silent: true} = state) do
+    {:noreply, state}
+  end
+
   def handle_info(msg, %{pid: pid, id: id} = state) do
     send(pid, {id, msg})
     {:noreply, state}

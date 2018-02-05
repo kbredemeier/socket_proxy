@@ -91,20 +91,34 @@ defmodule SocketProxy do
   alias SocketProxy.Proxy
 
   @doc """
+  Convinience function to call `start_proxy/2` with opts only.
+  """
+  @spec start_proxy(keyword) :: GenServer.on_start()
+  def start_proxy([_ | _] = opts) do
+    start_proxy(opts)
+  end
+
+  @doc """
   Starts a proxy. This must always be invoked first!
   It accepts an indentifier for the forwarded messages as argument.
-  When no indentifier was provided it will use the pid proxy as identifier.
+  When no indentifier provided it uses the pid of the proxy as identifier.
+
+  ## Options
+
+  * `silent` Silences the proxy when `true`. The `Proxy` will not forward any
+    messages. Default is `false`.
   """
-  @spec start_proxy(term | nil) :: GenServer.on_start()
-  def start_proxy(id \\ nil) do
-    Proxy.start_link(id)
+  @spec start_proxy(term | nil, keyword) :: GenServer.on_start()
+  def start_proxy(id \\ nil, opts \\ []) do
+    Proxy.start_link(id, opts)
   end
 
   @doc """
   Subscribes and joins the socket to the channel and links it to the proxy.
   See `Phoenix.ChannelTest.subscribe_and_join/4` for further details.
   """
-  @spec subscribe_and_join_proxy(Socket.t(), atom, String.t(), map) :: {:ok, Socket.t()}
+  @spec subscribe_and_join_proxy(Socket.t(), atom, String.t(), map) ::
+        {:ok, Socket.t()}
   def subscribe_and_join_proxy(socket, channel, topic, params \\ %{}) do
     Proxy.subscribe_and_join(socket.transport_pid, [
       socket,
@@ -118,7 +132,8 @@ defmodule SocketProxy do
   Subscribes and joins the socket to the channel and links it to the proxy.
   See `Phoenix.ChannelTest.subscribe_and_join!/4` for further details.
   """
-  @spec subscribe_and_join_proxy!(Socket.t(), atom, String.t(), map) :: Socket.t()
+  @spec subscribe_and_join_proxy!(Socket.t(), atom, String.t(), map) ::
+        Socket.t()
   def subscribe_and_join_proxy!(socket, channel, topic, params \\ %{}) do
     case subscribe_and_join_proxy(socket, channel, topic, params) do
       {:ok, _, socket} ->
