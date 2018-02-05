@@ -2,9 +2,6 @@ defmodule SocketProxy.ProxyTest do
   use ExUnit.Case, async: true
 
   alias Phoenix.Socket
-  alias Phoenix.Socket.Broadcast
-  alias Phoenix.Socket.Message
-  alias Phoenix.Socket.Reply
   alias SocketProxy.Proxy
   alias SocketProxyWeb.Endpoint
   alias SocketProxyWeb.RoomChannel
@@ -28,19 +25,6 @@ defmodule SocketProxy.ProxyTest do
     test "starts a proxy without arg" do
       assert {:ok, pid} = Proxy.start_link()
       assert is_pid(pid)
-      expected_pid = self()
-      assert %{pid: ^expected_pid, id: ^pid} = Proxy.__state__(pid)
-    end
-  end
-
-  describe "start_link/0" do
-    test "starts a proxy" do
-      assert {:ok, pid} = Proxy.start_link()
-      assert is_pid(pid)
-    end
-
-    test "sets up the expected state" do
-      {:ok, pid} = Proxy.start_link()
       expected_pid = self()
       assert %{pid: ^expected_pid, id: ^pid} = Proxy.__state__(pid)
     end
@@ -72,62 +56,13 @@ defmodule SocketProxy.ProxyTest do
   end
 
   describe "acting as a message proxy for broadcasts, messages and replies" do
-    setup do
-      {:ok, pid} = Proxy.start_link()
-      {:ok, pid: pid}
-    end
-
-    test """
-         When the proxy receives a broadcast it wraps the message in a tuple
-         with the stored id and forwards it to the stored process.
-         """,
-         %{pid: pid} do
-      msg = %Broadcast{event: System.unique_integer()}
-      send(pid, msg)
-      assert_receive {^pid, ^msg}
-    end
-
-    test """
-         When the proxy receives a message it wraps the message in a tuple
-         with the stored id and forwards it to the stored process.
-         """,
-         %{pid: pid} do
-      msg = %Message{ref: System.unique_integer()}
-      send(pid, msg)
-      assert_receive {^pid, ^msg}
-    end
-
-    test """
-         When the proxy receives a reply it wraps the reply in a tuple
-         with the stored id and forwards it to the stored process.
-         """,
-         %{pid: pid} do
-      msg = %Reply{ref: System.unique_integer()}
-      send(pid, msg)
-      assert_receive {^pid, ^msg}
-    end
-
-    test """
-         When the proxy receives a exit it wraps the msg in a tuple
-         with the stored id and forwards it to the stored process.
-         """,
-         %{pid: pid} do
-      msg = {
-        :graceful_exit,
-        self(),
-        %Message{join_ref: System.unique_integer()}
-      }
-      send(pid, msg)
-      assert_receive {^pid, ^msg}
-    end
-
     test """
          When the proxy receives any msg it wraps the msg in a tuple
          with the stored id and forwards it to the stored process.
-         """,
-         %{pid: pid} do
-      send(pid, :foo)
-      assert_receive {^pid, :foo}
+         """ do
+      {:ok, proxy_pid} = Proxy.start_link()
+      send(proxy_pid, {:any, :msg})
+      assert_receive {^proxy_pid, {:any, :msg}}
     end
   end
 end
