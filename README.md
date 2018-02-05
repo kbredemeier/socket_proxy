@@ -100,3 +100,9 @@ defmodule SocketProxyWeb.RoomChannelTest do
   end
 end
 ```
+
+## TODO
+
+* add examples for `assert_reply` and `refute_reply`
+* Test if `leave/1` and `close/1` works as expected
+
