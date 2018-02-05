@@ -2,6 +2,7 @@ defmodule SocketProxyTest do
   use SocketProxyWeb.ChannelCase
   use SocketProxy
 
+  alias Phoenix.Socket
   alias Phoenix.Socket.Broadcast
   alias Phoenix.Socket.Message
   alias Phoenix.Socket.Reply
@@ -28,7 +29,16 @@ defmodule SocketProxyTest do
   describe "connect_proxy/2" do
     test "connect to a socket" do
       {:ok, pid} = start_proxy(:test_id)
-      assert {:ok, _} = connect_proxy(pid, UserSocket, %{"name" => "alice"})
+
+      assert {:ok, %Socket{}} =
+               connect_proxy(pid, UserSocket, %{"name" => "alice"})
+    end
+  end
+
+  describe "connect_proxy!/2" do
+    test "connect to a socket" do
+      {:ok, pid} = start_proxy(:test_id)
+      assert %Socket{} = connect_proxy!(pid, UserSocket, %{"name" => "alice"})
     end
   end
 

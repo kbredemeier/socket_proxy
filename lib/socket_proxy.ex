@@ -172,6 +172,41 @@ defmodule SocketProxy do
     end
   end
 
+  @doc """
+  Same as `connect_proxy/3` but raises an error when it fails.
+  """
+  @spec connect_proxy!(pid, atom, map) :: Socket.t()
+  defmacro connect_proxy!(pid, handler, params \\ %{}) do
+    if endpoint = Module.get_attribute(__CALLER__.module, :endpoint) do
+      quote do
+        unquote(__MODULE__).__connect_proxy__!(
+          unquote(pid),
+          unquote(endpoint),
+          unquote(handler),
+          unquote(params)
+        )
+      end
+    else
+      raise "module attribute @endpoint not set for connect_proxy/3"
+    end
+  end
+
+  @doc false
+  def __connect_proxy__!(proxy_pid, endpoint, handler, params) do
+    case __connect_proxy__(proxy_pid, endpoint, handler, params) do
+      {:ok, socket} ->
+        socket
+
+      {:error, reason} ->
+        raise "connect_proxy!/3 failed to establis a connection: #{
+                inspect(reason)
+              }"
+
+      _error ->
+        raise "connect_proxy!/3 failed to establis a connection."
+    end
+  end
+
   @doc false
   def __connect_proxy__(proxy_pid, endpoint, handler, params) do
     Proxy.connect(
