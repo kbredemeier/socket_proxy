@@ -12,44 +12,48 @@ defmodule SocketProxy.ProxyTest do
       assert {:ok, pid} = Proxy.start_link(:test)
       assert is_pid(pid)
       expected_pid = self()
+
       assert %{
-        pid: ^expected_pid,
-        id: :test,
-        silent: false
-      } = Proxy.__state__(pid)
+               pid: ^expected_pid,
+               id: :test,
+               silent: false
+             } = Proxy.__state__(pid)
     end
 
     test "starts a proxy with nil" do
       assert {:ok, pid} = Proxy.start_link(nil)
       assert is_pid(pid)
       expected_pid = self()
+
       assert %{
-        pid: ^expected_pid,
-        id: ^pid,
-        silent: false
-      } = Proxy.__state__(pid)
+               pid: ^expected_pid,
+               id: ^pid,
+               silent: false
+             } = Proxy.__state__(pid)
     end
 
     test "starts a proxy without args" do
       assert {:ok, pid} = Proxy.start_link()
       assert is_pid(pid)
       expected_pid = self()
+
       assert %{
-        pid: ^expected_pid,
-        id: ^pid,
-        silent: false
-      } = Proxy.__state__(pid)
+               pid: ^expected_pid,
+               id: ^pid,
+               silent: false
+             } = Proxy.__state__(pid)
     end
 
     test "starts a proxy with silent option" do
       assert {:ok, pid} = Proxy.start_link(silent: true)
       assert is_pid(pid)
       expected_pid = self()
+
       assert %{
-        pid: ^expected_pid,
-        id: ^pid,
-        silent: true
-      } = Proxy.__state__(pid)
+               pid: ^expected_pid,
+               id: ^pid,
+               silent: true
+             } = Proxy.__state__(pid)
     end
   end
 
@@ -60,7 +64,9 @@ defmodule SocketProxy.ProxyTest do
     end
 
     test "builds a socket", %{pid: pid} do
-      assert {:ok, socket} = Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
+      assert {:ok, socket} =
+               Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
+
       assert %Socket{} = socket
       assert socket.transport_pid
       refute socket.transport_pid == self()
@@ -72,24 +78,34 @@ defmodule SocketProxy.ProxyTest do
   describe "subscribe_and_join/2" do
     test "subscribes to a channel" do
       {:ok, pid} = Proxy.start_link()
-      {:ok, socket} = Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
-      {:ok, _, %Socket{}} = Proxy.subscribe_and_join(pid, [socket, RoomChannel, "room:1"])
+
+      {:ok, socket} =
+        Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
+
+      {:ok, _, %Socket{}} =
+        Proxy.subscribe_and_join(pid, [socket, RoomChannel, "room:1"])
+
       assert_receive {^pid, _}
     end
 
     test "wont forward messages when silent" do
       {:ok, pid} = Proxy.start_link(silent: true)
-      {:ok, socket} = Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
-      {:ok, _, %Socket{}} = Proxy.subscribe_and_join(pid, [socket, RoomChannel, "room:1"])
+
+      {:ok, socket} =
+        Proxy.connect(pid, Endpoint, UserSocket, %{"name" => "alice"})
+
+      {:ok, _, %Socket{}} =
+        Proxy.subscribe_and_join(pid, [socket, RoomChannel, "room:1"])
+
       refute_receive _
     end
   end
 
   describe "acting as a message proxy for broadcasts, messages and replies" do
     test """
-         When the proxy receives any msg it wraps the msg in a tuple
-         with the stored id and forwards it to the stored process.
-         """ do
+    When the proxy receives any msg it wraps the msg in a tuple
+    with the stored id and forwards it to the stored process.
+    """ do
       {:ok, proxy_pid} = Proxy.start_link()
       send(proxy_pid, {:any, :msg})
       assert_receive {^proxy_pid, {:any, :msg}}

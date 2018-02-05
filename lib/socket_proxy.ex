@@ -118,7 +118,7 @@ defmodule SocketProxy do
   See `Phoenix.ChannelTest.subscribe_and_join/4` for further details.
   """
   @spec subscribe_and_join_proxy(Socket.t(), atom, String.t(), map) ::
-        {:ok, Socket.t()}
+          {:ok, Socket.t()}
   def subscribe_and_join_proxy(socket, channel, topic, params \\ %{}) do
     Proxy.subscribe_and_join(socket.transport_pid, [
       socket,
@@ -133,7 +133,7 @@ defmodule SocketProxy do
   See `Phoenix.ChannelTest.subscribe_and_join!/4` for further details.
   """
   @spec subscribe_and_join_proxy!(Socket.t(), atom, String.t(), map) ::
-        Socket.t()
+          Socket.t()
   def subscribe_and_join_proxy!(socket, channel, topic, params \\ %{}) do
     case subscribe_and_join_proxy(socket, channel, topic, params) do
       {:ok, _, socket} ->
@@ -187,20 +187,25 @@ defmodule SocketProxy do
   within `timeout`. Works similar to `Phoenix.ChannelTest.assert_reply/4`.
   """
   defmacro assert_reply_on(
-    id_or_socket,
-    ref,
-    status,
-    payload \\ Macro.escape(%{}),
-    timeout \\ 100
-  ) do
+             id_or_socket,
+             ref,
+             status,
+             payload \\ Macro.escape(%{}),
+             timeout \\ 100
+           ) do
     quote do
       ref = unquote(ref)
       pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id_or_socket))
 
       assert_receive {
-        ^pid_or_id,
-        %Reply{ref: ^ref, status: unquote(status), payload: unquote(payload)}
-      }, unquote(timeout)
+                       ^pid_or_id,
+                       %Reply{
+                         ref: ^ref,
+                         status: unquote(status),
+                         payload: unquote(payload)
+                       }
+                     },
+                     unquote(timeout)
     end
   end
 
@@ -209,20 +214,25 @@ defmodule SocketProxy do
   within `timeout`. Works similar to `Phoenix.ChannelTest.refute_reply/4`.
   """
   defmacro refute_reply_on(
-    id_or_socket,
-    ref,
-    status,
-    payload \\ Macro.escape(%{}),
-    timeout \\ 100
-  ) do
+             id_or_socket,
+             ref,
+             status,
+             payload \\ Macro.escape(%{}),
+             timeout \\ 100
+           ) do
     quote do
       ref = unquote(ref)
       pid_or_id = unquote(__MODULE__).__get_pid_or_id__(unquote(id_or_socket))
 
       refute_receive {
-        ^pid_or_id,
-        %Reply{ref: ^ref, status: unquote(status), payload: unquote(payload)}
-      }, unquote(timeout)
+                       ^pid_or_id,
+                       %Reply{
+                         ref: ^ref,
+                         status: unquote(status),
+                         payload: unquote(payload)
+                       }
+                     },
+                     unquote(timeout)
     end
   end
 
@@ -237,7 +247,10 @@ defmodule SocketProxy do
 
       assert_receive {
                        ^pid_or_id,
-                       %Message{event: unquote(event), payload: unquote(payload)}
+                       %Message{
+                         event: unquote(event),
+                         payload: unquote(payload)
+                       }
                      },
                      unquote(timeout)
     end
@@ -254,7 +267,10 @@ defmodule SocketProxy do
 
       refute_receive {
                        ^pid_or_id,
-                       %Message{event: unquote(event), payload: unquote(payload)}
+                       %Message{
+                         event: unquote(event),
+                         payload: unquote(payload)
+                       }
                      },
                      unquote(timeout)
     end
@@ -271,7 +287,10 @@ defmodule SocketProxy do
 
       assert_receive {
                        ^pid_or_id,
-                       %Broadcast{event: unquote(event), payload: unquote(payload)}
+                       %Broadcast{
+                         event: unquote(event),
+                         payload: unquote(payload)
+                       }
                      },
                      unquote(timeout)
     end
@@ -288,7 +307,10 @@ defmodule SocketProxy do
 
       refute_receive {
                        ^pid_or_id,
-                       %Broadcast{event: unquote(event), payload: unquote(payload)}
+                       %Broadcast{
+                         event: unquote(event),
+                         payload: unquote(payload)
+                       }
                      },
                      unquote(timeout)
     end

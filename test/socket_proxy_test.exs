@@ -47,16 +47,19 @@ defmodule SocketProxyTest do
     end
 
     test "it works with the proxy pid", %{proxy: proxy, ref: ref} do
-      assert_reply_on proxy, ref, :ok
+      assert_reply_on(proxy, ref, :ok)
     end
 
     test "it works with the proxy socket", %{socket: socket, ref: ref} do
-      assert_reply_on socket, ref, :ok
+      assert_reply_on(socket, ref, :ok)
     end
 
-    test "it fails when the message is not received", %{socket: socket, ref: ref} do
+    test "it fails when the message is not received", %{
+      socket: socket,
+      ref: ref
+    } do
       assert_raise ExUnit.AssertionError, fn ->
-        assert_reply_on socket, ref, :error
+        assert_reply_on(socket, ref, :error)
       end
     end
   end
@@ -76,16 +79,19 @@ defmodule SocketProxyTest do
     end
 
     test "it works with the proxy pid", %{proxy: proxy, ref: ref} do
-      refute_reply_on proxy, ref, :error
+      refute_reply_on(proxy, ref, :error)
     end
 
     test "it works with the proxy socket", %{socket: socket, ref: ref} do
-      refute_reply_on socket, ref, :error
+      refute_reply_on(socket, ref, :error)
     end
 
-    test "it fails when the message is not received", %{socket: socket, ref: ref} do
+    test "it fails when the message is not received", %{
+      socket: socket,
+      ref: ref
+    } do
       assert_raise ExUnit.AssertionError, fn ->
-        refute_reply_on socket, ref, :ok
+        refute_reply_on(socket, ref, :ok)
       end
     end
   end
@@ -228,7 +234,10 @@ defmodule SocketProxyTest do
        bob_socket: bob_socket}
     end
 
-    test "it works for Phoenix.Socket.Message", %{alice_proxy: alice_proxy, bob_proxy: bob_proxy} do
+    test "it works for Phoenix.Socket.Message", %{
+      alice_proxy: alice_proxy,
+      bob_proxy: bob_proxy
+    } do
       assert_receive {^alice_proxy,
                       %Message{
                         payload: %{"body" => "Welcome alice!"}

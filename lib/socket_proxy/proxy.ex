@@ -89,7 +89,7 @@ defmodule SocketProxy.Proxy do
     `[socket, channel_module, topic, params]`.
   """
   @spec subscribe_and_join(pid, list(any)) ::
-        {:ok, map, Socket.t()} | {:error, any}
+          {:ok, map, Socket.t()} | {:error, any}
   def subscribe_and_join(pid, subscribe_and_join_args) do
     GenServer.call(pid, {:subscribe_and_join, subscribe_and_join_args})
   end
