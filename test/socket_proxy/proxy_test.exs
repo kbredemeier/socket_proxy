@@ -106,5 +106,28 @@ defmodule SocketProxy.ProxyTest do
       send(pid, msg)
       assert_receive {^pid, ^msg}
     end
+
+    test """
+         When the proxy receives a exit it wraps the msg in a tuple
+         with the stored id and forwards it to the stored process.
+         """,
+         %{pid: pid} do
+      msg = {
+        :graceful_exit,
+        self(),
+        %Message{join_ref: System.unique_integer()}
+      }
+      send(pid, msg)
+      assert_receive {^pid, ^msg}
+    end
+
+    test """
+         When the proxy receives any msg it wraps the msg in a tuple
+         with the stored id and forwards it to the stored process.
+         """,
+         %{pid: pid} do
+      send(pid, :foo)
+      assert_receive {^pid, :foo}
+    end
   end
 end

@@ -9,9 +9,6 @@ defmodule SocketProxy.Proxy do
 
   alias Phoenix.ChannelTest
   alias Phoenix.ChannelTest.NoopSerializer
-  alias Phoenix.Socket.Broadcast
-  alias Phoenix.Socket.Message
-  alias Phoenix.Socket.Reply
   alias Phoenix.Socket.Transport
 
   @doc """
@@ -57,17 +54,7 @@ defmodule SocketProxy.Proxy do
     GenServer.call(pid, :state)
   end
 
-  def handle_info(%Message{} = msg, %{pid: pid, id: id} = state) do
-    send(pid, {id, msg})
-    {:noreply, state}
-  end
-
-  def handle_info(%Broadcast{} = msg, %{pid: pid, id: id} = state) do
-    send(pid, {id, msg})
-    {:noreply, state}
-  end
-
-  def handle_info(%Reply{} = msg, %{pid: pid, id: id} = state) do
+  def handle_info(msg, %{pid: pid, id: id} = state) do
     send(pid, {id, msg})
     {:noreply, state}
   end
